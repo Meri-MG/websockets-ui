@@ -4,6 +4,7 @@ import { registerPlayer } from './src/websocket/handlers/reg.js';
 import { handleCreateRoom } from './src/websocket/handlers/createRoom.js';
 import { findPlayerByWS } from './src/utils/playerUtils.js';
 import { handleAddUserToRoom } from './src/websocket/handlers/addUserToRoom.js';
+import { handleAddShips } from './src/websocket/handlers/addShips.js';
 
 const HTTP_PORT = 3000;
 
@@ -84,6 +85,9 @@ wss.on('connection', (ws) => {
         break;
       }
 
+      case "add_ships":
+        handleAddShips(ws, store, data);
+        break;
       default:
         console.warn(`Unknown type: ${type}`);
     }
