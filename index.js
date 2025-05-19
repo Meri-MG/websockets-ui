@@ -3,6 +3,7 @@ import { WebSocketServer } from 'ws';
 import { registerPlayer } from './src/websocket/handlers/reg.js';
 import { handleCreateRoom } from './src/websocket/handlers/createRoom.js';
 import { findPlayerByWS } from './src/utils/playerUtils.js';
+import { handleAddUserToRoom } from './src/websocket/handlers/addUserToRoom.js';
 
 const HTTP_PORT = 3000;
 
@@ -49,21 +50,40 @@ wss.on('connection', (ws) => {
       case 'reg':
         registerPlayer(ws, data, store);
         break;
-      case "create_room":
+      case "create_room": {
         const player = findPlayerByWS(ws, store);
-          if (!player) {
-            ws.send(JSON.stringify({
-              type: 'create_room',
-              data: JSON.stringify({
-                error: true,
-                errorText: 'Player not found. Please register first.',
-              }),
-              id: 0
-            }));
-            return;
-          }
+        if (!player) {
+          ws.send(JSON.stringify({
+            type: 'create_room',
+            data: JSON.stringify({
+              error: true,
+              errorText: 'Player not found. Please register first.',
+            }),
+            id: 0
+          }));
+          return;
+        }
         handleCreateRoom(ws, store, player.name, player.index);
         break;
+      }
+
+      case "add_user_to_room": {
+        const player = findPlayerByWS(ws, store);
+        if (!player) {
+          ws.send(JSON.stringify({
+            type: 'create_room',
+            data: JSON.stringify({
+              error: true,
+              errorText: 'Player not found. Please register first.',
+            }),
+            id: 0
+          }));
+          return;
+        }
+        handleAddUserToRoom(ws, store, data.indexRoom, player.name, player.index);
+        break;
+      }
+
       default:
         console.warn(`Unknown type: ${type}`);
     }
