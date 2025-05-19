@@ -1,8 +1,8 @@
 import { httpServer } from './src/http_server/index.js';
 import { WebSocketServer } from 'ws';
-
 import { registerPlayer } from './src/websocket/handlers/reg.js';
 import { handleCreateRoom } from './src/websocket/handlers/createRoom.js';
+import { findPlayerByWS } from './src/utils/playerUtils.js';
 
 const HTTP_PORT = 3000;
 
@@ -31,9 +31,13 @@ wss.on('connection', (ws) => {
       return;
     }
 
-    let data;
-    try {
-      data = typeof payload.data === 'string' ? JSON.parse(payload.data) : payload.data;
+   let data;
+   try {
+      if (typeof payload.data === 'string' && payload.data.trim() !== '') {
+        data = JSON.parse(payload.data);
+      } else {
+        data = payload.data || {};
+      }
     } catch (e) {
       console.error('Failed to parse payload.data:', e);
       data = {};
@@ -45,7 +49,21 @@ wss.on('connection', (ws) => {
       case 'reg':
         registerPlayer(ws, data, store);
         break;
-
+      case "create_room":
+        const player = findPlayerByWS(ws, store);
+          if (!player) {
+            ws.send(JSON.stringify({
+              type: 'create_room',
+              data: JSON.stringify({
+                error: true,
+                errorText: 'Player not found. Please register first.',
+              }),
+              id: 0
+            }));
+            return;
+          }
+        handleCreateRoom(ws, store, player.name, player.index);
+        break;
       default:
         console.warn(`Unknown type: ${type}`);
     }

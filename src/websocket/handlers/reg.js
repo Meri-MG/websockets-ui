@@ -1,6 +1,4 @@
-const players = new Map(); // store { name, password, ws }
-
-export function registerPlayer(ws, data) {
+export function registerPlayer(ws, data, store) {
   const { name, password } = data;
 
   if (!name || !password) {
@@ -17,11 +15,11 @@ export function registerPlayer(ws, data) {
     return;
   }
 
-  if (!players.has(name)) {
-    players.set(name, { password, ws, index: players.size });
+  if (!store.players.has(name)) {
+    store.players.set(name, { password, ws, index: store.players.size });
   }
 
-  const index = players.get(name).index;
+  const index = store.players.get(name).index;
 
   ws.send(JSON.stringify({
     type: 'reg',
