@@ -6,3 +6,14 @@ export function findPlayerByWS(ws, store) {
   }
   return null;
 }
+
+export function sendError(ws, type, errorText) {
+  ws.send(JSON.stringify({
+    type,
+    data: JSON.stringify({
+      error: true,
+      errorText,
+    }),
+    id: 0,
+  }));
+}
